@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "public"."Product" ALTER COLUMN "price" SET DATA TYPE DECIMAL(65,30);
+
+-- AlterTable
+ALTER TABLE "public"."User" ALTER COLUMN "wallet" SET DEFAULT 100000,
+ALTER COLUMN "wallet" SET DATA TYPE DECIMAL(65,30);

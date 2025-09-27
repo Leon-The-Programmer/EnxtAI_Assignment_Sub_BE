@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  pan       String
+  password  String
+  kycDoc    String? // path or URL of uploaded ID
+  wallet    Decimal  @default(100000)
+  createdAt DateTime @default(now())
+
+  transactions Transaction[]
+  watchlist    Watchlist[]
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  category  String
+  price     Decimal
+  peRatio   Float
+  createdAt DateTime @default(now())
+
+  transactions  Transaction[]
+  watchlistedBy Watchlist[]
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  units     Int
+  buyPrice  Decimal
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])  // Indexing would speed up "get transactions for user, ordered by date"
+}
+
+model Watchlist {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

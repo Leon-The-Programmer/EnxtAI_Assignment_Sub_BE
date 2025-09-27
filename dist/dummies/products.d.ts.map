@@ -1,0 +1,1 @@
+{"version":3,"file":"products.d.ts","sourceRoot":"","sources":["../../src/dummies/products.ts"],"names":[],"mappings":"AAAA,UAAU,OAAO;IACb,EAAE,EAAE,MAAM,CAAC;IACX,IAAI,EAAE,MAAM,CAAC;IACb,QAAQ,EAAE,MAAM,CAAC;IACjB,KAAK,EAAE,MAAM,CAAC;IACd,OAAO,EAAE,MAAM,CAAC;IAChB,WAAW,EAAE,MAAM,CAAC;CACvB;AAED,QAAA,IAAI,QAAQ,EAAE,OAAO,EAyBpB,CAAC;AAEF,eAAe,QAAQ,CAAC"}
