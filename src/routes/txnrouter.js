@@ -1,16 +1,17 @@
-import { Router, type Response } from "express";
+import { Router } from "express";
 import { PrismaClient } from "../generated/prisma/index.js";
-import { authenticateJWT } from "../security/jwthandler.ts";
-import type { AuthenticatedRequest } from "../security/jwthandler.ts";
-import { redis } from "../redisclient.ts";
+import { authenticateJWT } from "../security/jwthandler.js";
+import { redis } from "../redisclient.js";
 
 const prisma = new PrismaClient();
 const txnRouter = Router();
 
 // Buy endpoint (JWT-protected)..
-txnRouter.post("/buy", authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+txnRouter.post("/buy", authenticateJWT, async (req, res) => {
   try {
-    const userId = req.userId!;
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
     const { productId, units } = req.body;
 
     if (!productId || !units) {
@@ -37,7 +38,6 @@ txnRouter.post("/buy", authenticateJWT, async (req: AuthenticatedRequest, res: R
 
     // Calculate total cost (Decimal multiplication)..
     const totalAmount = product.price.mul(units);
-
     const updatedWallet = user.wallet.sub(totalAmount);
 
     // Check if user has sufficient balance..
@@ -79,9 +79,10 @@ txnRouter.post("/buy", authenticateJWT, async (req: AuthenticatedRequest, res: R
 
 // Get all transactions of the logged-in user..
 // Sorted by newest first, pagination (page & limit query params)..
-txnRouter.get("/get-txn", authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+txnRouter.get("/get-txn", authenticateJWT, async (req, res) => {
   try {
-    const userId = req.userId!;
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     // Pagination params (optional, default: page 1, limit 10)..
     const page = Number(req.query.page) || 1;
@@ -89,7 +90,7 @@ txnRouter.get("/get-txn", authenticateJWT, async (req: AuthenticatedRequest, res
     const skip = (page - 1) * limit;
 
     const totalCount = await prisma.transaction.count({
-        where: {userId}
+        where: { userId }
     });
 
     // Fetch transactions for user, include product info, sorted by newest first..
@@ -115,4 +116,3 @@ txnRouter.get("/get-txn", authenticateJWT, async (req: AuthenticatedRequest, res
 });
 
 export default txnRouter;
-

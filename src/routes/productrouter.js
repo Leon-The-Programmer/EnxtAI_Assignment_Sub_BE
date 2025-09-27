@@ -1,6 +1,6 @@
-import { Router, type Response } from "express";
+import { Router } from "express";
 import { PrismaClient } from "../generated/prisma/index.js";
-import { redis } from "../redisclient.ts";
+import { redis } from "../redisclient.js";
 
 const prisma = new PrismaClient();
 const productRouter = Router();
@@ -12,20 +12,19 @@ const PRODUCT_CACHE_KEY = "products";
 const cacheProducts = async () => {
     try {
         // Fetch and sort by ID in ascending order..
-        const products = await prisma.product.findMany({orderBy: {id: "asc"}});
+        const products = await prisma.product.findMany({ orderBy: { id: "asc" } });
         await redis.set(PRODUCT_CACHE_KEY, JSON.stringify(products));
         console.log("Products Cache Refreshed!"); 
     } catch (error) {
         console.error("Error refreshing products cache:", error);
     }
-}
+};
 
 cacheProducts();
 setInterval(cacheProducts, 2 * 60 * 1000);
 
-
 // List all products..
-productRouter.get("/", async (_req, res: Response) => {
+productRouter.get("/", async (_req, res) => {
   try {
     const cached = await redis.get(PRODUCT_CACHE_KEY);
     if (cached) {
@@ -43,7 +42,7 @@ productRouter.get("/", async (_req, res: Response) => {
 });
 
 // Get a single product..
-productRouter.get("/:id", async (req, res: Response) => {
+productRouter.get("/:id", async (req, res) => {
   try {
     const productId = Number(req.params.id);
     if (isNaN(productId)) {

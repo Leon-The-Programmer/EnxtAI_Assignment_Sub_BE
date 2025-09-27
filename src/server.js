@@ -1,8 +1,8 @@
 import express from "express";
-import userRouter from "./routes/userrouter.ts";
-import productRouter from "./routes/productrouter.ts";
-import portfolioRouter from "./routes/portfoliorouter.ts";
-import txnRouter from "./routes/txnrouter.ts";
+import userRouter from "./routes/userrouter.js";
+import productRouter from "./routes/productrouter.js";
+import portfolioRouter from "./routes/portfoliorouter.js";
+import txnRouter from "./routes/txnrouter.js";
 
 const app = express();
 

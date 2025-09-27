@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from "express";
+import { Router } from "express";
 import { PrismaClient } from "../generated/prisma/index.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -9,7 +9,7 @@ const userRouter = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
 // GET all users, just for testing purposes..
-userRouter.get("/getuser", async (req: Request, res: Response) => {
+userRouter.get("/getuser", async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: { id: true, name: true, email: true, pan: true, wallet: true, createdAt: true }
@@ -22,7 +22,7 @@ userRouter.get("/getuser", async (req: Request, res: Response) => {
 });
 
 // Signup endpoint..
-userRouter.post("/signup", async (req: Request, res: Response) => {
+userRouter.post("/signup", async (req, res) => {
   try {
     const { name, email, password, pan } = req.body;
 
@@ -53,7 +53,7 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
 });
 
 // Login endpoint..
-userRouter.post("/login", async (req: Request, res: Response) => {
+userRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 

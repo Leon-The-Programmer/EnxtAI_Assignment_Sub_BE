@@ -1,7 +1,7 @@
-import { Router, type Response } from "express";
+import { Router } from "express";
 import { PrismaClient } from "../generated/prisma/index.js";
-import { authenticateJWT, type AuthenticatedRequest } from "../security/jwthandler.ts";
-import { redis } from "../redisclient.ts";
+import { authenticateJWT } from "../security/jwthandler.js";
+import { redis } from "../redisclient.js";
 
 const prisma = new PrismaClient();
 const portfolioRouter = Router();
@@ -9,9 +9,10 @@ const portfolioRouter = Router();
 // TTL for portfolio redis cache (5 mins)..
 const REDIS_CACHE_TTL = 300;
 
-portfolioRouter.get("/", authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
-    // A non-null assertion because JWT guarantees that userId is included at the time of signing the token..
-    const userId = req.userId!;
+portfolioRouter.get("/", authenticateJWT, async (req, res) => {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
     const cacheKey = `portfolio:${userId}`;
 
     // Check Redis first..
@@ -28,17 +29,9 @@ portfolioRouter.get("/", authenticateJWT, async (req: AuthenticatedRequest, res:
         include: { product: true }
     });
 
-    interface Holding {
-        productId: number;
-        name: string;
-        units: number;
-        buyPrice: number;
-        currentPrice: number;
-    }
-
-    // Portfolio Aggregation //
+    // Portfolio Aggregation..
     // Creating a map to aggregate holdings by product..
-    const holdingsMap = new Map<number, { units: number; totalCost: number; currentPrice: number; name: string }>();
+    const holdingsMap = new Map();
 
     // Loop through each transaction..
     // The purpose is to aggregate all transactions per product into a single record..
@@ -46,35 +39,35 @@ portfolioRouter.get("/", authenticateJWT, async (req: AuthenticatedRequest, res:
         const prev = holdingsMap.get(txn.productId);
         const totalCost = parseFloat(txn.buyPrice.toString()) * txn.units;
         if (prev) {
-        holdingsMap.set(txn.productId, {
-            units: prev.units + txn.units,
-            totalCost: prev.totalCost + totalCost,
-            currentPrice: parseFloat(txn.product.price.toString()),
-            name: txn.product.name
-        });
+            holdingsMap.set(txn.productId, {
+                units: prev.units + txn.units,
+                totalCost: prev.totalCost + totalCost,
+                currentPrice: parseFloat(txn.product.price.toString()),
+                name: txn.product.name
+            });
         } else {
-        holdingsMap.set(txn.productId, {
-            units: txn.units,
-            totalCost,
-            currentPrice: parseFloat(txn.product.price.toString()),
-            name: txn.product.name
-        });
+            holdingsMap.set(txn.productId, {
+                units: txn.units,
+                totalCost,
+                currentPrice: parseFloat(txn.product.price.toString()),
+                name: txn.product.name
+            });
         }
     }
 
     // Prepare final holdings array & portfolio totals..
-    const holdings: Holding[] = [];
+    const holdings = [];
     let totalInvested = 0;
     let currentVal = 0;
 
     holdingsMap.forEach((value, productId) => {
         const avgBuyPrice = value.totalCost / value.units;
         holdings.push({
-        productId,
-        name: value.name,
-        units: value.units,
-        buyPrice: avgBuyPrice,
-        currentPrice: value.currentPrice
+            productId,
+            name: value.name,
+            units: value.units,
+            buyPrice: avgBuyPrice,
+            currentPrice: value.currentPrice
         });
         totalInvested += avgBuyPrice * value.units;
         currentVal += value.currentPrice * value.units;
@@ -87,7 +80,7 @@ portfolioRouter.get("/", authenticateJWT, async (req: AuthenticatedRequest, res:
         currentVal,
         returns: currentVal - totalInvested,
         holdings
-    }
+    };
 
     // Redis caching with a TTL for expiration..
     await redis.setex(cacheKey, REDIS_CACHE_TTL, JSON.stringify(portfolioData));
