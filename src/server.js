@@ -4,9 +4,12 @@ import productRouter from "./routes/productrouter.js";
 import portfolioRouter from "./routes/portfoliorouter.js";
 import txnRouter from "./routes/txnrouter.js";
 
+import cors from "cors";
+
 const app = express();
 
 app.use(express.json());
+app.use(cors({origin: "*"}));
 
 // Mounting routers..
 app.use("/api/v1/users", userRouter);

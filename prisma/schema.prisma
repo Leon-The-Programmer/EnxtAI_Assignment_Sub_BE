@@ -50,7 +50,7 @@ model Transaction {
   buyPrice  Decimal
   createdAt DateTime @default(now())
 
-  @@index([userId, createdAt])  // Indexing would speed up "get transactions for user, ordered by date"
+  @@index([userId, createdAt]) // Indexing would speed up "get transactions for user, ordered by date"
 }
 
 model Watchlist {
