@@ -31,7 +31,7 @@ The codebase is organized to promote modularity, maintainability, and clear sepa
 
 • server.js – The entry point of the application. All routers are mounted here, establishing the API endpoints.
 
-• routers/ – Contains feature-specific routers:
+### routers – Contains feature-specific routers:
 
 • productrouter.js – Handles product listing endpoints
 
@@ -45,7 +45,7 @@ The codebase is organized to promote modularity, maintainability, and clear sepa
 
 • jwthandler.js – Validates JWTs, extracts the user identity, and attaches it to requests for secure access
 
-• prisma/ – Prisma schema and migration files for PostgreSQL
+### prisma – Prisma schema and migration files for PostgreSQL
 
 • prismaclient.js – Exposes a reusable Prisma client instance to all modules
 
@@ -76,7 +76,7 @@ This approach centralizes authentication logic, reduces redundancy, and enforces
 The backend can be run locally to facilitate testing, development, or evaluation. The following steps outline the environment setup and execution process:
 
 ```1. Clone the Repository
-git clone <repository-url>
+git clone https://github.com/Leon-The-Programmer/EnxtAI_Assignment_Sub_BE.git
 cd <repository-folder>
 
 2. Install Dependencies
